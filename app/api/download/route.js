@@ -37,6 +37,8 @@ export async function POST(request) {
       errors: failed
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message || 'Failed to download videos.' }, { status: 500 });
+    const message = error.message || 'Failed to download videos.';
+    const status = /not installed|failed to start|timed out/i.test(message) ? 503 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
