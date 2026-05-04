@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function HomePage() {
   const [sourceUrl, setSourceUrl] = useState('');
   const [image, setImage] = useState(null);
+  const [mode, setMode] = useState('all');
   const [status, setStatus] = useState('');
   const [results, setResults] = useState([]);
 
@@ -16,6 +17,7 @@ export default function HomePage() {
     const formData = new FormData();
     formData.append('sourceUrl', sourceUrl);
     if (image) formData.append('endImage', image);
+    formData.append('mode', mode);
 
     const response = await fetch('/api/download', {
       method: 'POST',
@@ -53,8 +55,13 @@ export default function HomePage() {
 
         <input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} />
 
+        <select value={mode} onChange={(event) => setMode(event.target.value)} style={{ padding: 10 }} >
+          <option value="all">All videos</option>
+          <option value="one">One video only</option>
+        </select>
+
         <button type="submit" style={{ padding: 10, cursor: 'pointer' }}>
-          Download All Videos
+          Download Videos
         </button>
       </form>
 

@@ -12,6 +12,7 @@ export async function POST(request) {
     const formData = await request.formData();
     const sourceUrl = formData.get('sourceUrl');
     const endImage = formData.get('endImage');
+    const mode = formData.get('mode');
 
     if (!sourceUrl || typeof sourceUrl !== 'string') {
       return NextResponse.json({ error: 'sourceUrl is required.' }, { status: 400 });
@@ -28,7 +29,7 @@ export async function POST(request) {
       safeImage = endImage;
     }
 
-    const { processed, failed } = await downloadCollection(sourceUrl.trim(), safeImage);
+    const { processed, failed } = await downloadCollection(sourceUrl.trim(), safeImage, mode === 'one' ? 'one' : 'all');
     return NextResponse.json({
       total: processed.length + failed.length,
       success: processed.length,
