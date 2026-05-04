@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import { downloadCollection } from '@/lib/video';
+import { downloadCollection } from '../../../lib/video';
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function isAllowedImageType(file) {
+  return ['image/png', 'image/jpeg', 'image/webp'].includes(file.type);
+}
 
 export async function POST(request) {
   try {
@@ -11,8 +17,25 @@ export async function POST(request) {
       return NextResponse.json({ error: 'sourceUrl is required.' }, { status: 400 });
     }
 
-    const videos = await downloadCollection(sourceUrl, endImage && endImage.size ? endImage : null);
-    return NextResponse.json({ total: videos.length, videos });
+    let safeImage = null;
+    if (endImage && endImage.size) {
+      if (!isAllowedImageType(endImage)) {
+        return NextResponse.json({ error: 'Only PNG, JPG, or WEBP images are allowed.' }, { status: 400 });
+      }
+      if (endImage.size > MAX_IMAGE_BYTES) {
+        return NextResponse.json({ error: 'Image size must be 5MB or less.' }, { status: 400 });
+      }
+      safeImage = endImage;
+    }
+
+    const { processed, failed } = await downloadCollection(sourceUrl.trim(), safeImage);
+    return NextResponse.json({
+      total: processed.length + failed.length,
+      success: processed.length,
+      failed: failed.length,
+      videos: processed,
+      errors: failed
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message || 'Failed to download videos.' }, { status: 500 });
   }
