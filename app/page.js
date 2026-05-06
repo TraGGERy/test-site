@@ -53,7 +53,7 @@ export default function HomePage() {
           style={{ padding: 10 }}
         />
 
-        <input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} />
+        <input type="file" accept="image/*,video/mp4,video/quicktime" onChange={(event) => setImage(event.target.files?.[0] || null)} />
 
         <select value={mode} onChange={(event) => setMode(event.target.value)} style={{ padding: 10 }} >
           <option value="all">All videos</option>
