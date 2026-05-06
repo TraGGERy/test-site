@@ -16,7 +16,7 @@ export default function HomePage() {
 
     const formData = new FormData();
     formData.append('sourceUrl', sourceUrl);
-    if (image) formData.append('endImage', image);
+    if (image) formData.append('ctaFile', image);
     formData.append('mode', mode);
 
     const response = await fetch('/api/download', {
@@ -58,10 +58,11 @@ export default function HomePage() {
         <select value={mode} onChange={(event) => setMode(event.target.value)} style={{ padding: 10 }} >
           <option value="all">All videos</option>
           <option value="one">One video only</option>
+          <option value="ten">First 10 videos</option>
         </select>
 
         <button type="submit" style={{ padding: 10, cursor: 'pointer' }}>
-          Download Videos
+          Download & Merge CTA
         </button>
       </form>
 

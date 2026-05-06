@@ -3,15 +3,15 @@ import { downloadCollection } from '../../../lib/video';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-function isAllowedImageType(file) {
-  return ['image/png', 'image/jpeg', 'image/webp'].includes(file.type);
+function isAllowedCtaType(file) {
+  return ['image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'video/quicktime'].includes(file.type);
 }
 
 export async function POST(request) {
   try {
     const formData = await request.formData();
     const sourceUrl = formData.get('sourceUrl');
-    const endImage = formData.get('endImage');
+    const ctaFile = formData.get('ctaFile') || formData.get('endImage');
     const mode = formData.get('mode');
 
     if (!sourceUrl || typeof sourceUrl !== 'string') {
@@ -19,17 +19,18 @@ export async function POST(request) {
     }
 
     let safeImage = null;
-    if (endImage && endImage.size) {
-      if (!isAllowedImageType(endImage)) {
-        return NextResponse.json({ error: 'Only PNG, JPG, or WEBP images are allowed.' }, { status: 400 });
+    if (ctaFile && ctaFile.size) {
+      if (!isAllowedCtaType(ctaFile)) {
+        return NextResponse.json({ error: 'Only PNG/JPG/WEBP images or MP4/MOV CTA videos are allowed.' }, { status: 400 });
       }
-      if (endImage.size > MAX_IMAGE_BYTES) {
+      if (ctaFile.size > MAX_IMAGE_BYTES) {
         return NextResponse.json({ error: 'Image size must be 5MB or less.' }, { status: 400 });
       }
-      safeImage = endImage;
+      safeImage = ctaFile;
     }
 
-    const { processed, failed } = await downloadCollection(sourceUrl.trim(), safeImage, mode === 'one' ? 'one' : 'all');
+    const selectedMode = mode === 'one' || mode === 'ten' ? mode : 'all';
+    const { processed, failed } = await downloadCollection(sourceUrl.trim(), safeImage, selectedMode);
     return NextResponse.json({
       total: processed.length + failed.length,
       success: processed.length,
